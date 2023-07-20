@@ -1,0 +1,23 @@
+{
+  "name": "livedocs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+      "scripts": {
+       "dev": "concurrently \"cd Back-end && npm run dev\" \"cd Front-end && npm start\" "
+   }
+  ,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jameel0901/LiveDocs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jameel0901/LiveDocs/issues"
+  },
+  "homepage": "https://github.com/jameel0901/LiveDocs#readme",
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
