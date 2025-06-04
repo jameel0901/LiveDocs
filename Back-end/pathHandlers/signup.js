@@ -1,31 +1,32 @@
 const { Users } = require("../utils/model");
-const bycrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 const asyncHandler = require('express-async-handler');
 
-const singupHandler = asyncHandler( async (req,res) => {
-   console.log("Req",req);
-    const {name,email,password} = req.body;
-   if(!name||!email,!password){
-      res.status(400);
-      res.send("All fields are mandatory")
-   };
-   const userAlreadyExsits = Users.findOne({email});
-   if(userAlreadyExsits){
+const signupHandler = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
     res.status(400);
-    res.send("User Already Exists with this Email");
-   };
-   res.send("Request recevied");
-   const hasedPassword = await bycrypt.hash(password,10);
-   // console.log("HasedPassword",hasedPassword);
-   const user = await Users.create({
+    return res.send("All fields are mandatory");
+  }
+
+  const userAlreadyExists = await Users.findOne({ email });
+
+  if (userAlreadyExists) {
+    res.status(400);
+    return res.send("User Already Exists with this Email");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = await Users.create({
     name,
     email,
-    password : hasedPassword
-   });
-   if(user){
-      res.status(201).json({_id:user.id,email:user.email});
-   };
-   console.log("user",user)
+    password: hashedPassword,
+  });
+
+  if (user) {
+    res.status(201).json({ _id: user.id, email: user.email });
+  }
 });
 
-module.exports = singupHandler
+module.exports = signupHandler;

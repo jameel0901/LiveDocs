@@ -1,24 +1,36 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 import './App.css';
 
+const socket = io('http://localhost:5000');
+const DOCUMENT_ID = 'main';
+
 function App() {
+  const [content, setContent] = useState('');
+
+  useEffect(() => {
+    socket.emit('join-document', DOCUMENT_ID);
+    socket.on('document', (data: string) => {
+      setContent(data);
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setContent(value);
+    socket.emit('edit-document', value);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <textarea
+        style={{ width: '100%', height: '90vh' }}
+        value={content}
+        onChange={handleChange}
+      />
     </div>
   );
 }
