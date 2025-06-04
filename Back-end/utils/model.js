@@ -1,9 +1,12 @@
 
-const userData = require("./schema");
+const { userSchema, documentSchema } = require("./schema");
 const mongoose = require("mongoose");
 
 const connectDb = async () => {
   try {
+    if (!process.env.ATLAS_URI) {
+      throw new Error('ATLAS_URI environment variable is not defined');
+    }
     const connect = await mongoose.connect(process.env.ATLAS_URI);
     console.log(
       "Database connected: ",
@@ -15,6 +18,7 @@ const connectDb = async () => {
     process.exit(1);
   }
 };
-const Users = mongoose.models.Users||mongoose.model("Users", userData);
+const Users = mongoose.models.Users || mongoose.model("Users", userSchema);
+const Document = mongoose.models.Document || mongoose.model("Document", documentSchema);
 
-module.exports = { connectDb ,Users };
+module.exports = { connectDb, Users, Document };
