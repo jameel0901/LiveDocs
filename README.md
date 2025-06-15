@@ -3,7 +3,7 @@
 A simplified Google Docs-like application with real-time collaboration.
 
 ## Backend Environment Variables
-Create a `.env` file inside the `Back-end` directory based on `.env.example` and supply the following variables:
+Create a `.env` file inside the `Back-end` directory (the server always loads it from this location) and supply the following variables:
 
 ```
 PORT=5000
