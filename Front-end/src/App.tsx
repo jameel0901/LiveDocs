@@ -1,37 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
+import Login from './Login';
+import Signup from './Signup';
+import Dashboard from './Dashboard';
+import DocumentEditor from './DocumentEditor';
 import './App.css';
 
-const socket = io('http://localhost:5000');
-const DOCUMENT_ID = 'main';
+const DocumentWrapper: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  if (!id) return null;
+  return <DocumentEditor id={id} onExit={() => navigate('/dashboard')} />;
+};
 
 function App() {
-  const [content, setContent] = useState('');
-
-  useEffect(() => {
-    socket.emit('join-document', DOCUMENT_ID);
-    socket.on('document', (data: string) => {
-      setContent(data);
-    });
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setContent(value);
-    socket.emit('edit-document', value);
-  };
-
   return (
-    <div className="App">
-      <textarea
-        style={{ width: '100%', height: '90vh' }}
-        value={content}
-        onChange={handleChange}
-      />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/document/:id" element={<DocumentWrapper />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
   );
 }
 
