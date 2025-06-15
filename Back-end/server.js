@@ -12,6 +12,10 @@ const {
   createDocument,
   updateDocument,
   requestShare,
+  getIncomingRequests,
+  getOutgoingRequests,
+  grantAccess,
+  removeRequest,
 } = require("./pathHandlers/document");
 
 const path = require("path");
@@ -39,6 +43,10 @@ app.get("/document/:id", getOrCreateDocument);
 app.post("/documents", createDocument);
 app.put("/documents/:id", updateDocument);
 app.post("/documents/:id/request", requestShare);
+app.post("/documents/:id/requests/:requesterId/grant", grantAccess);
+app.delete("/documents/:id/requests/:requesterId", removeRequest);
+app.get("/users/:id/incoming-requests", getIncomingRequests);
+app.get("/users/:id/outgoing-requests", getOutgoingRequests);
 app.get("/users", async (req, res) => {
   const users = await Users.find().lean();
   const populated = await Promise.all(
