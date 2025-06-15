@@ -61,7 +61,9 @@ app.get("/users", async (req, res) => {
 app.get("/users/:id", async (req, res) => {
   const user = await Users.findById(req.params.id).lean();
   if (!user) return res.status(404).send("User not found");
-  const docs = await Document.find({ owner: user._id }).lean();
+  const docs = await Document.find({
+    $or: [{ owner: user._id }, { sharedWith: user._id }],
+  }).lean();
   res.json({ ...user, documents: docs });
 });
 
