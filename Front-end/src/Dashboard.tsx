@@ -5,6 +5,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
+
   documents: { _id: string; name: string }[];
 }
 
@@ -12,12 +13,15 @@ interface OtherUser {
   _id: string;
   name: string;
   documents: { _id: string; name: string }[];
+
 }
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+
   const [others, setOthers] = useState<OtherUser[]>([]);
+
 
   useEffect(() => {
     const stored = localStorage.getItem('user');
@@ -32,6 +36,7 @@ const Dashboard: React.FC = () => {
     fetch('http://localhost:5000/users')
       .then(res => res.json())
       .then(data => setOthers(data.filter((o: OtherUser) => o._id !== u._id)));
+
   }, [navigate]);
 
   const createDoc = async () => {
@@ -44,6 +49,7 @@ const Dashboard: React.FC = () => {
     const doc = await res.json();
     navigate(`/document/${doc._id}`);
   };
+
 
   const sendRequest = async (docId: string, permission: string) => {
     if (!user) return;
@@ -59,6 +65,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
+
       <h2>Dashboard</h2>
       <p>Name: {user.name}</p>
       <p>Email: {user.email}</p>
@@ -67,6 +74,7 @@ const Dashboard: React.FC = () => {
       <ul>
         {user.documents.map(doc => (
           <li key={doc._id}>
+
             <button onClick={() => navigate(`/document/${doc._id}`)}>
               {doc.name || doc._id}
             </button>
@@ -95,6 +103,7 @@ const Dashboard: React.FC = () => {
                 </li>
               ))}
             </ul>
+
           </li>
         ))}
       </ul>
