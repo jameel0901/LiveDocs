@@ -23,12 +23,12 @@ const Login: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="auth-container" onSubmit={handleSubmit}>
       <h2>Login</h2>
       <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
       <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
       <button type="submit">Login</button>
-      <p>
+      <p style={{ textAlign: 'center', marginTop: '0.5rem' }}>
         No account? <a href="/signup">Sign Up</a>
       </p>
     </form>

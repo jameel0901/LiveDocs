@@ -6,7 +6,7 @@ const cors = require("cors");
 const signupHandler = require("./pathHandlers/signup.js");
 const loginHandler = require("./pathHandlers/login.js");
 const { connectDb, Document, Users } = require("./utils/model");
-const { getOrCreateDocument, createDocument } = require("./pathHandlers/document");
+const { getOrCreateDocument, createDocument, updateDocument } = require("./pathHandlers/document");
 const path = require("path");
 const envPath = path.join(__dirname, ".env");
 const result = require("dotenv").config({ path: envPath });
@@ -30,6 +30,7 @@ app.post("/signup", signupHandler);
 app.post("/login", loginHandler);
 app.get("/document/:id", getOrCreateDocument);
 app.post("/documents", createDocument);
+app.put("/documents/:id", updateDocument);
 app.get("/users/:id", async (req, res) => {
   const user = await Users.findById(req.params.id).lean();
   if (!user) return res.status(404).send("User not found");

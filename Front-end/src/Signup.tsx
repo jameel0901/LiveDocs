@@ -22,7 +22,7 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="auth-container" onSubmit={handleSubmit}>
       <h2>Sign Up</h2>
       <input placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
       <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />

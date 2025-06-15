@@ -5,7 +5,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  documents: { _id: string }[];
+  documents: { _id: string; name: string }[];
 }
 
 const Dashboard: React.FC = () => {
@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
   if (!user) return <div>Loading...</div>;
 
   return (
-    <div>
+    <div className="dashboard">
       <h2>Dashboard</h2>
       <p>Name: {user.name}</p>
       <p>Email: {user.email}</p>
@@ -47,7 +47,9 @@ const Dashboard: React.FC = () => {
       <ul>
         {user.documents.map(doc => (
           <li key={doc._id}>
-            <button onClick={() => navigate(`/document/${doc._id}`)}>{doc._id}</button>
+            <button onClick={() => navigate(`/document/${doc._id}`)}>
+              {doc.name || doc._id}
+            </button>
           </li>
         ))}
       </ul>

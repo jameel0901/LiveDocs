@@ -19,6 +19,7 @@ const userSchema = mongoose.Schema({
 
 const documentSchema = mongoose.Schema({
   _id: { type: String },
+  name: { type: String, default: "Untitled" },
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
   sharedWith: [{ type: mongoose.Schema.Types.ObjectId, ref: "Users" }],
   content: { type: String, default: "" },
