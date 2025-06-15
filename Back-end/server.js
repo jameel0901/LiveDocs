@@ -6,7 +6,14 @@ const cors = require("cors");
 const signupHandler = require("./pathHandlers/signup.js");
 const loginHandler = require("./pathHandlers/login.js");
 const { connectDb, Document, Users } = require("./utils/model");
-const { getOrCreateDocument, createDocument } = require("./pathHandlers/document");
+
+const {
+  getOrCreateDocument,
+  createDocument,
+  updateDocument,
+  requestShare,
+} = require("./pathHandlers/document");
+
 const path = require("path");
 const envPath = path.join(__dirname, ".env");
 const result = require("dotenv").config({ path: envPath });
@@ -30,6 +37,19 @@ app.post("/signup", signupHandler);
 app.post("/login", loginHandler);
 app.get("/document/:id", getOrCreateDocument);
 app.post("/documents", createDocument);
+app.put("/documents/:id", updateDocument);
+app.post("/documents/:id/request", requestShare);
+app.get("/users", async (req, res) => {
+  const users = await Users.find().lean();
+  const populated = await Promise.all(
+    users.map(async (u) => {
+      const docs = await Document.find({ owner: u._id }).select("_id name").lean();
+      return { _id: u._id, name: u.name, documents: docs };
+    })
+  );
+  res.json(populated);
+});
+
 app.get("/users/:id", async (req, res) => {
   const user = await Users.findById(req.params.id).lean();
   if (!user) return res.status(404).send("User not found");

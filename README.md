@@ -2,6 +2,9 @@
 
 A simplified Google Docs-like application with real-time collaboration.
 
+Documents are saved with a name and content. When exiting the editor, the latest
+text and chosen name are persisted to MongoDB.
+
 ## Backend Environment Variables
 Create a `.env` file inside the `Back-end` directory (the server always loads it from this location) and supply the following variables:
 
