@@ -12,9 +12,11 @@ const getOrCreateDocument = asyncHandler(async (req, res) => {
 });
 
 const createDocument = asyncHandler(async (req, res) => {
+
   const { ownerId, name } = req.body;
   const newId = new mongoose.Types.ObjectId().toString();
   const doc = await Document.create({ _id: newId, owner: ownerId, name });
+
   if (ownerId) {
     await Users.findByIdAndUpdate(ownerId, { $push: { documents: newId } });
   }
@@ -55,3 +57,5 @@ module.exports = {
   updateDocument,
   requestShare,
 };
+
+

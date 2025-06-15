@@ -7,16 +7,20 @@ interface Props { id: string; onExit: () => void; }
 
 const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   const [content, setContent] = useState('');
+
   const [name, setName] = useState('');
+
 
   useEffect(() => {
     socket.emit('join-document', id);
     socket.on('document', (data: string) => {
       setContent(data);
     });
+
     fetch(`http://localhost:5000/document/${id}`)
       .then(res => res.json())
       .then(doc => setName(doc.name || ''));
+
     return () => {
       socket.disconnect();
     };
@@ -27,6 +31,7 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
     setContent(value);
     socket.emit('edit-document', value);
   };
+
 
   const saveAndExit = async () => {
     await fetch(`http://localhost:5000/documents/${id}` , {
@@ -46,6 +51,7 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
         placeholder="Document Name"
       />
       <button onClick={saveAndExit}>Save & Exit</button>
+
       <textarea
         style={{ width: '100%', height: '80vh' }}
         value={content}

@@ -6,12 +6,14 @@ const cors = require("cors");
 const signupHandler = require("./pathHandlers/signup.js");
 const loginHandler = require("./pathHandlers/login.js");
 const { connectDb, Document, Users } = require("./utils/model");
+
 const {
   getOrCreateDocument,
   createDocument,
   updateDocument,
   requestShare,
 } = require("./pathHandlers/document");
+
 const path = require("path");
 const envPath = path.join(__dirname, ".env");
 const result = require("dotenv").config({ path: envPath });
@@ -47,6 +49,7 @@ app.get("/users", async (req, res) => {
   );
   res.json(populated);
 });
+
 app.get("/users/:id", async (req, res) => {
   const user = await Users.findById(req.params.id).lean();
   if (!user) return res.status(404).send("User not found");
