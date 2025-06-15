@@ -3,7 +3,10 @@ const { userSchema, documentSchema } = require("./schema");
 const mongoose = require("mongoose");
 
 const connectDb = async () => {
-  try {
+   console.log("Connecting to database...");
+   console.log("ATLAS_URI:", process.env.ATLAS_URI);
+   console.log("MONGODB_URI:", process.env.MONGODB_URI);
+   try {
     if (!process.env.ATLAS_URI) {
       throw new Error('ATLAS_URI environment variable is not defined');
     }
