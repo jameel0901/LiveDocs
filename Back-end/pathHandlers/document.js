@@ -51,11 +51,88 @@ const requestShare = asyncHandler(async (req, res) => {
   res.json({ message: "Request sent" });
 });
 
+const getIncomingRequests = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const docs = await Document.find({ owner: id })
+    .populate("shareRequests.requester", "name")
+    .select("_id name shareRequests")
+    .lean();
+  const requests = [];
+  docs.forEach((doc) => {
+    doc.shareRequests.forEach((r) => {
+      requests.push({
+        documentId: doc._id,
+        documentName: doc.name,
+        requesterId: r.requester._id,
+        requesterName: r.requester.name,
+        permission: r.permission,
+      });
+    });
+  });
+  res.json(requests);
+});
+
+const getOutgoingRequests = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const docs = await Document.find({ "shareRequests.requester": id })
+    .populate("owner", "name")
+    .select("_id name owner shareRequests")
+    .lean();
+  const requests = [];
+  docs.forEach((doc) => {
+    doc.shareRequests
+      .filter((r) => r.requester.toString() === id)
+      .forEach((r) => {
+        requests.push({
+          documentId: doc._id,
+          documentName: doc.name,
+          ownerId: doc.owner._id,
+          ownerName: doc.owner.name,
+          permission: r.permission,
+        });
+      });
+  });
+  res.json(requests);
+});
+
+const grantAccess = asyncHandler(async (req, res) => {
+  const { id, requesterId } = req.params;
+  const doc = await Document.findById(id);
+  if (!doc) return res.status(404).send("Document not found");
+  const reqIndex = doc.shareRequests.findIndex(
+    (r) => r.requester.toString() === requesterId
+  );
+  if (reqIndex === -1)
+    return res.status(404).send("Request not found");
+
+  await Document.findByIdAndUpdate(id, {
+    $push: { sharedWith: requesterId },
+    $pull: { shareRequests: { requester: requesterId } },
+  });
+
+  res.json({ message: "Access granted" });
+});
+
+const removeRequest = asyncHandler(async (req, res) => {
+  const { id, requesterId } = req.params;
+  const doc = await Document.findByIdAndUpdate(
+    id,
+    { $pull: { shareRequests: { requester: requesterId } } },
+    { new: true }
+  );
+  if (!doc) return res.status(404).send("Document not found");
+  res.json({ message: "Request removed" });
+});
+
 module.exports = {
   getOrCreateDocument,
   createDocument,
   updateDocument,
   requestShare,
+  getIncomingRequests,
+  getOutgoingRequests,
+  grantAccess,
+  removeRequest,
 };
 
 
