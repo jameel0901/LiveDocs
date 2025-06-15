@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import React, { useEffect, useState, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
 
-const socket = io('http://localhost:5000');
+const fetchApi: typeof fetch =
+  (typeof window !== 'undefined' && (window as any).fetch) ||
+  (global as any).fetch;
 
 interface Props { id: string; onExit: () => void; }
 
@@ -9,15 +11,17 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   const [content, setContent] = useState('');
 
   const [name, setName] = useState('');
-
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
+    const socket = io('http://localhost:5000');
+    socketRef.current = socket;
     socket.emit('join-document', id);
     socket.on('document', (data: string) => {
       setContent(data);
     });
 
-    fetch(`http://localhost:5000/document/${id}`)
+    fetchApi(`http://localhost:5000/document/${id}`)
       .then(res => res.json())
       .then(doc => setName(doc.name || ''));
 
@@ -29,12 +33,12 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setContent(value);
-    socket.emit('edit-document', value);
+    socketRef.current?.emit('edit-document', value);
   };
 
 
   const saveAndExit = async () => {
-    await fetch(`http://localhost:5000/documents/${id}` , {
+    await fetchApi(`http://localhost:5000/documents/${id}` , {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, content })
@@ -43,17 +47,18 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   };
 
   return (
-    <div>
+    <div className="editor-container">
+      <div className="editor-actions">
+        <button onClick={saveAndExit}>Save &amp; Exit</button>
+      </div>
       <input
-        style={{ width: '100%', fontSize: '1.5rem', marginBottom: '0.5rem' }}
+        className="doc-title"
         value={name}
         onChange={e => setName(e.target.value)}
         placeholder="Document Name"
       />
-      <button onClick={saveAndExit}>Save & Exit</button>
-
       <textarea
-        style={{ width: '100%', height: '80vh' }}
+        className="editor-textarea"
         value={content}
         onChange={handleChange}
       />

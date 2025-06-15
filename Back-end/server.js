@@ -12,6 +12,10 @@ const {
   createDocument,
   updateDocument,
   requestShare,
+  getIncomingRequests,
+  getOutgoingRequests,
+  grantAccess,
+  removeRequest,
 } = require("./pathHandlers/document");
 
 const path = require("path");
@@ -39,6 +43,10 @@ app.get("/document/:id", getOrCreateDocument);
 app.post("/documents", createDocument);
 app.put("/documents/:id", updateDocument);
 app.post("/documents/:id/request", requestShare);
+app.post("/documents/:id/requests/:requesterId/grant", grantAccess);
+app.delete("/documents/:id/requests/:requesterId", removeRequest);
+app.get("/users/:id/incoming-requests", getIncomingRequests);
+app.get("/users/:id/outgoing-requests", getOutgoingRequests);
 app.get("/users", async (req, res) => {
   const users = await Users.find().lean();
   const populated = await Promise.all(
@@ -53,7 +61,9 @@ app.get("/users", async (req, res) => {
 app.get("/users/:id", async (req, res) => {
   const user = await Users.findById(req.params.id).lean();
   if (!user) return res.status(404).send("User not found");
-  const docs = await Document.find({ owner: user._id }).lean();
+  const docs = await Document.find({
+    $or: [{ owner: user._id }, { sharedWith: user._id }],
+  }).lean();
   res.json({ ...user, documents: docs });
 });
 
