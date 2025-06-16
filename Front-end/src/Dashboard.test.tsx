@@ -15,6 +15,7 @@ beforeEach(() => {
         name: 'Alice',
         email: 'a@example.com',
         documents: [
+
           { _id: 'doc1', name: 'Doc1', owner: { _id: '1', name: 'Alice' } },
           {
             _id: 'doc2',
@@ -22,6 +23,7 @@ beforeEach(() => {
             owner: { _id: '2', name: 'Bob' },
             sharedAt: '2023-01-01T00:00:00.000Z'
           }
+
         ]
       })
     })
@@ -40,6 +42,7 @@ test('shows shared documents in dashboard', async () => {
   render(<Dashboard />);
   const shared = await screen.findByText('Shared Doc');
   expect(shared).toBeInTheDocument();
+
   const owner = screen.getByText('Bob', { exact: false });
   expect(owner).toBeInTheDocument();
   const dateText = new Date('2023-01-01T00:00:00.000Z').toLocaleDateString();
