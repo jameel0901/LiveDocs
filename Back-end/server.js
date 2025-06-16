@@ -68,8 +68,10 @@ app.get("/users/:id", async (req, res) => {
     .lean();
 
   const docs = rawDocs.map((d) => {
-    const info = d.sharedWith.find(
-      (sw) => sw.user.toString() === user._id.toString()
+
+    const info = (d.sharedWith || []).find(
+      (sw) => sw.user && sw.user.toString() === user._id.toString()
+
     );
     return {
       _id: d._id,
