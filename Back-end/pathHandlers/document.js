@@ -106,7 +106,7 @@ const grantAccess = asyncHandler(async (req, res) => {
     return res.status(404).send("Request not found");
 
   await Document.findByIdAndUpdate(id, {
-    $push: { sharedWith: requesterId },
+    $push: { sharedWith: { user: requesterId, sharedAt: new Date() } },
     $pull: { shareRequests: { requester: requesterId } },
   });
 
