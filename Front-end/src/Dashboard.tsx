@@ -16,11 +16,29 @@ interface OtherUser {
 
 }
 
+interface IncomingRequest {
+  documentId: string;
+  documentName: string;
+  requesterId: string;
+  requesterName: string;
+  permission: string;
+}
+
+interface OutgoingRequest {
+  documentId: string;
+  documentName: string;
+  ownerId: string;
+  ownerName: string;
+  permission: string;
+}
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
 
   const [others, setOthers] = useState<OtherUser[]>([]);
+  const [incoming, setIncoming] = useState<IncomingRequest[]>([]);
+  const [outgoing, setOutgoing] = useState<OutgoingRequest[]>([]);
 
 
   useEffect(() => {
@@ -36,6 +54,12 @@ const Dashboard: React.FC = () => {
     fetch('http://localhost:5000/users')
       .then(res => res.json())
       .then(data => setOthers(data.filter((o: OtherUser) => o._id !== u._id)));
+    fetch(`http://localhost:5000/users/${u._id}/incoming-requests`)
+      .then(res => res.json())
+      .then(setIncoming);
+    fetch(`http://localhost:5000/users/${u._id}/outgoing-requests`)
+      .then(res => res.json())
+      .then(setOutgoing);
 
   }, [navigate]);
 
@@ -59,6 +83,24 @@ const Dashboard: React.FC = () => {
       body: JSON.stringify({ userId: user._id, permission })
     });
     alert('Request sent');
+  };
+
+  const grantRequest = async (docId: string, requesterId: string) => {
+    await fetch(`http://localhost:5000/documents/${docId}/requests/${requesterId}/grant`, {
+      method: 'POST'
+    });
+    setIncoming(prev => prev.filter(r => !(r.documentId === docId && r.requesterId === requesterId)));
+  };
+
+  const removeRequest = async (docId: string, requesterId: string, type: 'incoming' | 'outgoing') => {
+    await fetch(`http://localhost:5000/documents/${docId}/requests/${requesterId}`, {
+      method: 'DELETE'
+    });
+    if (type === 'incoming') {
+      setIncoming(prev => prev.filter(r => !(r.documentId === docId && r.requesterId === requesterId)));
+    } else {
+      setOutgoing(prev => prev.filter(r => r.documentId !== docId));
+    }
   };
 
   if (!user) return <div>Loading...</div>;
@@ -104,6 +146,25 @@ const Dashboard: React.FC = () => {
               ))}
             </ul>
 
+          </li>
+        ))}
+      </ul>
+      <h3>Incoming Requests</h3>
+      <ul>
+        {incoming.map(r => (
+          <li key={r.documentId + r.requesterId}>
+            {r.requesterName} wants {r.permission} on {r.documentName}{' '}
+            <button onClick={() => grantRequest(r.documentId, r.requesterId)}>Grant</button>{' '}
+            <button onClick={() => removeRequest(r.documentId, r.requesterId, 'incoming')}>Decline</button>
+          </li>
+        ))}
+      </ul>
+      <h3>Outgoing Requests</h3>
+      <ul>
+        {outgoing.map(r => (
+          <li key={r.documentId}>
+            Request to {r.ownerName} for {r.permission} on {r.documentName}{' '}
+            <button onClick={() => removeRequest(r.documentId, user!._id, 'outgoing')}>Cancel</button>
           </li>
         ))}
       </ul>
