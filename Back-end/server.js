@@ -61,9 +61,24 @@ app.get("/users", async (req, res) => {
 app.get("/users/:id", async (req, res) => {
   const user = await Users.findById(req.params.id).lean();
   if (!user) return res.status(404).send("User not found");
-  const docs = await Document.find({
-    $or: [{ owner: user._id }, { sharedWith: user._id }],
-  }).lean();
+  const rawDocs = await Document.find({
+    $or: [{ owner: user._id }, { 'sharedWith.user': user._id }],
+  })
+    .populate('owner', 'name')
+    .lean();
+
+  const docs = rawDocs.map((d) => {
+    const info = d.sharedWith.find(
+      (sw) => sw.user.toString() === user._id.toString()
+    );
+    return {
+      _id: d._id,
+      name: d.name,
+      owner: d.owner ? { _id: d.owner._id, name: d.owner.name } : null,
+      sharedAt: info ? info.sharedAt : undefined,
+    };
+  });
+
   res.json({ ...user, documents: docs });
 });
 
