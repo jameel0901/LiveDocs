@@ -5,8 +5,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-
-  documents: { _id: string; name: string }[];
+  documents: { _id: string; name: string; owner?: string }[];
 }
 
 interface OtherUser {
@@ -122,6 +121,18 @@ const Dashboard: React.FC = () => {
             </button>
           </li>
         ))}
+      </ul>
+      <h3>Shared With You</h3>
+      <ul>
+        {user.documents
+          .filter(doc => doc.owner && doc.owner.toString() !== user._id)
+          .map(doc => (
+            <li key={doc._id}>
+              <button onClick={() => navigate(`/document/${doc._id}`)}>
+                {doc.name || doc._id}
+              </button>
+            </li>
+          ))}
       </ul>
       <h3>Other Users</h3>
       <ul>
