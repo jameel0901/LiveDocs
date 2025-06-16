@@ -11,6 +11,7 @@ interface User {
     owner: { _id: string; name: string } | null;
     sharedAt?: string;
   }[];
+
 }
 
 interface OtherUser {
@@ -131,13 +132,16 @@ const Dashboard: React.FC = () => {
       </ul>
       <h3>Shared With You</h3>
       <ul>
+
         {(user.documents || [])
           .filter(doc => doc.owner && doc.owner._id !== user._id)
+
           .map(doc => (
             <li key={doc._id}>
               <button onClick={() => navigate(`/document/${doc._id}`)}>
                 {doc.name || doc._id}
               </button>
+
               {doc.owner && (
                 <span>
                   {' '}– {doc.owner.name}{' '}
@@ -145,6 +149,7 @@ const Dashboard: React.FC = () => {
                     `(${new Date(doc.sharedAt).toLocaleDateString()})`}
                 </span>
               )}
+
             </li>
           ))}
       </ul>
