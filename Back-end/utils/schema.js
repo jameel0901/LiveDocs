@@ -22,7 +22,12 @@ const documentSchema = mongoose.Schema({
 
   name: { type: String, default: "Untitled" },
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
-  sharedWith: [{ type: mongoose.Schema.Types.ObjectId, ref: "Users" }],
+  sharedWith: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
+      sharedAt: { type: Date, default: Date.now },
+    },
+  ],
   shareRequests: [
     {
       requester: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
