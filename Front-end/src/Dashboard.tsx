@@ -53,16 +53,16 @@ const Dashboard: React.FC = () => {
       return;
     }
     const u = JSON.parse(stored);
-    fetch(`http://localhost:5000/users/${u._id}`)
+    fetch(`https://livedocs-gool.onrender.com/users/${u._id}`)
       .then(res => res.json())
       .then(data => setUser(data));
-    fetch('http://localhost:5000/users')
+    fetch('https://livedocs-gool.onrender.com/users')
       .then(res => res.json())
       .then(data => setOthers(data.filter((o: OtherUser) => o._id !== u._id)));
-    fetch(`http://localhost:5000/users/${u._id}/incoming-requests`)
+    fetch(`https://livedocs-gool.onrender.com/users/${u._id}/incoming-requests`)
       .then(res => res.json())
       .then(setIncoming);
-    fetch(`http://localhost:5000/users/${u._id}/outgoing-requests`)
+    fetch(`https://livedocs-gool.onrender.com/users/${u._id}/outgoing-requests`)
       .then(res => res.json())
       .then(setOutgoing);
 
@@ -70,7 +70,7 @@ const Dashboard: React.FC = () => {
 
   const createDoc = async () => {
     if (!user) return;
-    const res = await fetch('http://localhost:5000/documents', {
+    const res = await fetch('https://livedocs-gool.onrender.com/documents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ownerId: user._id })
@@ -82,7 +82,7 @@ const Dashboard: React.FC = () => {
 
   const sendRequest = async (docId: string, permission: string) => {
     if (!user) return;
-    await fetch(`http://localhost:5000/documents/${docId}/request`, {
+    await fetch(`https://livedocs-gool.onrender.com/documents/${docId}/request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: user._id, permission })
@@ -91,14 +91,14 @@ const Dashboard: React.FC = () => {
   };
 
   const grantRequest = async (docId: string, requesterId: string) => {
-    await fetch(`http://localhost:5000/documents/${docId}/requests/${requesterId}/grant`, {
+    await fetch(`https://livedocs-gool.onrender.com/documents/${docId}/requests/${requesterId}/grant`, {
       method: 'POST'
     });
     setIncoming(prev => prev.filter(r => !(r.documentId === docId && r.requesterId === requesterId)));
   };
 
   const removeRequest = async (docId: string, requesterId: string, type: 'incoming' | 'outgoing') => {
-    await fetch(`http://localhost:5000/documents/${docId}/requests/${requesterId}`, {
+    await fetch(`https://livedocs-gool.onrender.com/documents/${docId}/requests/${requesterId}`, {
       method: 'DELETE'
     });
     if (type === 'incoming') {

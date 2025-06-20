@@ -4,6 +4,14 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// GitHub Pages can't serve client-side routes. When arriving via a 404 page,
+// the desired path is stored in sessionStorage and must be restored here.
+const redirectPath = sessionStorage.getItem('redirect');
+if (redirectPath) {
+  sessionStorage.removeItem('redirect');
+  window.history.replaceState(null, '', redirectPath);
+}
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
