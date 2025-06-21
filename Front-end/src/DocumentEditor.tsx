@@ -16,14 +16,43 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   useEffect(() => {
     const socket = io('https://livedocs-gool.onrender.com');
     socketRef.current = socket;
-    socket.emit('join-document', id);
-    socket.on('document', (data: string) => {
-      setContent(data);
+    socket.on('document', (payload: unknown) => {
+      if (typeof payload === 'string') {
+        setContent(payload);
+        return;
+      }
+
+      if (payload && typeof payload === 'object') {
+        const maybeText =
+          (payload as any).content ??
+          (payload as any).data ??
+          (payload as any).text;
+
+        if (typeof maybeText === 'string') {
+          setContent(maybeText);
+        } else {
+          try {
+            setContent(JSON.stringify(payload));
+          } catch {
+            setContent('');
+          }
+        }
+
+        return;
+      }
+
+      setContent('');
     });
+    socket.emit('join-document', id);
 
     fetchApi(`https://livedocs-gool.onrender.com/document/${id}`)
       .then(res => res.json())
-      .then(doc => setName(doc.name || ''));
+      .then(doc => {
+        setName(doc.name || '');
+        if (typeof doc.content === 'string') {
+          setContent(doc.content);
+        }
+      });
 
     return () => {
       socket.disconnect();
