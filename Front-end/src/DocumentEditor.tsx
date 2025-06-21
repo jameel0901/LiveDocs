@@ -101,13 +101,18 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
     const socket = io('https://livedocs-gool.onrender.com');
     socketRef.current = socket;
     socket.emit('join-document', id);
-    socket.on('document', (data: { content: string; authors: string[] }) => {
-      setContent(data.content);
-      const arr = data.content.split('').map((ch, i) => ({
-        ch,
-        userId: data.authors[i] || null,
-      }));
-      setChars(arr);
+    socket.on('document', (data: any) => {
+      if (typeof data === 'string') {
+        setContent(data);
+        setChars(data.split('').map(ch => ({ ch, userId: null })));
+      } else if (data && typeof data.content === 'string') {
+        setContent(data.content);
+        const arr = data.content.split('').map((ch: string, i: number) => ({
+          ch,
+          userId: data.authors?.[i] || null,
+        }));
+        setChars(arr);
+      }
     });
     socket.on('document-op', (op: Operation) => {
       setContent(prev => applyTextOp(prev, op));
@@ -116,7 +121,13 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
 
     fetchApi(`https://livedocs-gool.onrender.com/document/${id}`)
       .then(res => res.json())
-      .then(doc => setName(doc.name || ''));
+      .then(doc => {
+        setName(doc.name || '');
+        if (doc.content) {
+          setContent(doc.content);
+          setChars(doc.content.split('').map((ch: string) => ({ ch, userId: null })));
+        }
+      });
 
     return () => {
       socket.disconnect();
