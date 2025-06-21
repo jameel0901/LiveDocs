@@ -28,7 +28,7 @@ if (result.error) {
 const port = process.env.PORT || 5000;
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, { cors: { origin: "https://jameel0901.github.io" } });
 connectDb();
 //Returns middleware that only parses the json data
 app.use(bodyParser.json());
@@ -36,7 +36,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-app.use(cors({ origin: "*" }));
+app.use(cors({ origin: "https://jameel0901.github.io" }));
 app.post("/signup", signupHandler);
 app.post("/login", loginHandler);
 app.get("/document/:id", getOrCreateDocument);

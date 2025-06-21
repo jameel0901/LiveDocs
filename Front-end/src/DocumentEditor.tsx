@@ -14,14 +14,14 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const socket = io('http://localhost:5000');
+    const socket = io('https://livedocs-gool.onrender.com');
     socketRef.current = socket;
     socket.emit('join-document', id);
     socket.on('document', (data: string) => {
       setContent(data);
     });
 
-    fetchApi(`http://localhost:5000/document/${id}`)
+    fetchApi(`https://livedocs-gool.onrender.com/document/${id}`)
       .then(res => res.json())
       .then(doc => setName(doc.name || ''));
 
@@ -38,7 +38,7 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
 
 
   const saveAndExit = async () => {
-    await fetchApi(`http://localhost:5000/documents/${id}` , {
+    await fetchApi(`https://livedocs-gool.onrender.com/documents/${id}` , {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, content })
