@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/LiveDocs/static/css/main.css",
+    "main.js": "/LiveDocs/static/js/main.js",
+    "static/js/453.f7be5b23.chunk.js": "/LiveDocs/static/js/453.f7be5b23.chunk.js",
+    "index.html": "/LiveDocs/index.html",
+    "453.f7be5b23.chunk.js.map": "/LiveDocs/static/js/453.f7be5b23.chunk.js.map",
+    "main.css.map": "/LiveDocs/static/css/main.css.map",
+    "main.js.map": "/LiveDocs/static/js/main.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.css",
+    "static/js/main.js"
+  ]
+}

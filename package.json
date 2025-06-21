@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-      "scripts": {
-      "dev": "node ./node_modules/concurrently/dist/bin/concurrently.js \"cd Back-end && npm run dev\" \"cd Front-end && npm start\"",
-      "test": "cd Front-end && npm test -- --watchAll=false"
-   }
-  ,
+  "scripts": {
+    "dev": "node ./node_modules/concurrently/dist/bin/concurrently.js \"cd Back-end && npm run dev\" \"cd Front-end && npm start\"",
+    "test": "cd Front-end && npm test -- --watchAll=false",
+    "build-docs": "BUILD_PATH=../docs PUBLIC_URL=/LiveDocs npm --prefix Front-end run build && node scripts/fixDocs.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jameel0901/LiveDocs.git"
