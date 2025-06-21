@@ -90,11 +90,22 @@ io.on("connection", (socket) => {
     const doc =
       (await Document.findById(id)) ||
       (await Document.create({ _id: id }));
-    socket.emit("document", doc.content);
+    socket.emit("document", { content: doc.content, authors: doc.authors || [] });
 
-    socket.on("edit-document", async (content) => {
-      await Document.findByIdAndUpdate(id, { content });
-      socket.to(id).emit("document", content);
+    socket.on("edit-document", async (op) => {
+      const doc =
+        (await Document.findById(id)) || (await Document.create({ _id: id }));
+      const current = doc.content || "";
+      const newContent =
+        current.slice(0, op.index) +
+        op.insertText +
+        current.slice(op.index + op.deleteCount);
+      doc.content = newContent;
+      const authorInsert = Array(op.insertText.length).fill(op.userId);
+      if (!Array.isArray(doc.authors)) doc.authors = [];
+      doc.authors.splice(op.index, op.deleteCount, ...authorInsert);
+      await doc.save();
+      socket.to(id).emit("document-op", op);
     });
   });
 });
