@@ -100,32 +100,46 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   useEffect(() => {
     const socket = io('https://livedocs-gool.onrender.com');
     socketRef.current = socket;
-    socket.emit('join-document', id);
-    socket.on('document', (data: any) => {
-      if (typeof data === 'string') {
-        setContent(data);
-        setChars(data.split('').map(ch => ({ ch, userId: null })));
-      } else if (data && typeof data.content === 'string') {
-        setContent(data.content);
-        const arr = data.content.split('').map((ch: string, i: number) => ({
-          ch,
-          userId: data.authors?.[i] || null,
-        }));
-        setChars(arr);
+
+    socket.on('document', (payload: unknown) => {
+      if (typeof payload === 'string') {
+        setContent(payload);
+        return;
       }
+
+      if (payload && typeof payload === 'object') {
+        const maybeText =
+          (payload as any).content ??
+          (payload as any).data ??
+          (payload as any).text;
+
+        if (typeof maybeText === 'string') {
+          setContent(maybeText);
+        } else {
+          try {
+            setContent(JSON.stringify(payload));
+          } catch {
+            setContent('');
+          }
+        }
+
+        return;
+      }
+
+      setContent('');
+
     });
-    socket.on('document-op', (op: Operation) => {
-      setContent(prev => applyTextOp(prev, op));
-      setChars(prev => applyCharOp(prev, op));
-    });
+    socket.emit('join-document', id);
 
     fetchApi(`https://livedocs-gool.onrender.com/document/${id}`)
       .then(res => res.json())
       .then(doc => {
         setName(doc.name || '');
+
         if (doc.content) {
           setContent(doc.content);
           setChars(doc.content.split('').map((ch: string) => ({ ch, userId: null })));
+
         }
       });
 
