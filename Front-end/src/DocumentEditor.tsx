@@ -102,10 +102,10 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
     socketRef.current = socket;
 
     socket.on('document', (payload: unknown) => {
-      if (typeof payload === 'string') {
-        setContent(payload);
-        return;
-      }
+      // if (typeof payload === 'string') {
+      //   setContent(payload);
+      //   return;
+      // }
 
       if (payload && typeof payload === 'object') {
         const maybeText =
@@ -136,10 +136,11 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
       .then(doc => {
         setName(doc.name || '');
 
-        if (doc.content) {
+        if (typeof doc.content === 'string') {
           setContent(doc.content);
-          setChars(doc.content.split('').map((ch: string) => ({ ch, userId: null })));
-
+          setChars(
+            doc.content.split('').map((ch: string) => ({ ch, userId: null }))
+          );
         }
       });
 
