@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
+// Base URL for the backend server during development
+const API_URL = 'http://localhost:5000';
+
 const fetchApi: typeof fetch =
   (typeof window !== 'undefined' && (window as any).fetch) ||
   (global as any).fetch;
@@ -98,7 +101,7 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   };
 
   useEffect(() => {
-    const socket = io('https://livedocs-gool.onrender.com');
+    const socket = io(API_URL);
     socketRef.current = socket;
 
     socket.on('document', (payload: unknown) => {
@@ -131,7 +134,7 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
     });
     socket.emit('join-document', id);
 
-    fetchApi(`https://livedocs-gool.onrender.com/document/${id}`)
+    fetchApi(`${API_URL}/document/${id}`)
       .then(res => res.json())
       .then(doc => {
         setName(doc.name || '');
@@ -183,7 +186,7 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
 
 
   const saveAndExit = async () => {
-    await fetchApi(`https://livedocs-gool.onrender.com/documents/${id}` , {
+    await fetchApi(`${API_URL}/documents/${id}` , {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, content })
