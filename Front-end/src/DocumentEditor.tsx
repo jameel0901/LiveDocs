@@ -136,10 +136,11 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
       .then(doc => {
         setName(doc.name || '');
 
-        if (doc.content) {
+        if (typeof doc.content === 'string') {
           setContent(doc.content);
-          setChars(doc.content.split('').map((ch: string) => ({ ch, userId: null })));
-
+          setChars(
+            doc.content.split('').map((ch: string) => ({ ch, userId: null }))
+          );
         }
       });
 
