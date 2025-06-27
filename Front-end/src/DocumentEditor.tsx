@@ -102,7 +102,11 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
     socketRef.current = socket;
 
     socket.on('document', (payload: unknown) => {
-    
+      // if (typeof payload === 'string') {
+      //   setContent(payload);
+      //   return;
+      // }
+
       if (payload && typeof payload === 'object') {
         const maybeText =
           (payload as any).content ??
