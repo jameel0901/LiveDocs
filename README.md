@@ -28,3 +28,14 @@ npm run dev
 ```
 
 Ensure MongoDB is accessible using the connection string you provide in the `.env` file.
+
+## Frontend Configuration
+
+The React client can be pointed to a custom API and WebSocket server by setting the following environment variables when running `npm start` or building the docs:
+
+```
+REACT_APP_API_URL=<backend http base URL>
+REACT_APP_SOCKET_URL=<backend websocket URL>
+```
+
+If not provided, both default to `https://livedocs-gool.onrender.com`.

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from './config';
 
 interface User {
   _id: string;
@@ -53,16 +54,16 @@ const Dashboard: React.FC = () => {
       return;
     }
     const u = JSON.parse(stored);
-    fetch(`https://livedocs-gool.onrender.com/users/${u._id}`)
+    fetch(`${API_URL}/users/${u._id}`)
       .then(res => res.json())
       .then(data => setUser(data));
-    fetch('https://livedocs-gool.onrender.com/users')
+    fetch(`${API_URL}/users`)
       .then(res => res.json())
       .then(data => setOthers(data.filter((o: OtherUser) => o._id !== u._id)));
-    fetch(`https://livedocs-gool.onrender.com/users/${u._id}/incoming-requests`)
+    fetch(`${API_URL}/users/${u._id}/incoming-requests`)
       .then(res => res.json())
       .then(setIncoming);
-    fetch(`https://livedocs-gool.onrender.com/users/${u._id}/outgoing-requests`)
+    fetch(`${API_URL}/users/${u._id}/outgoing-requests`)
       .then(res => res.json())
       .then(setOutgoing);
 
@@ -70,7 +71,7 @@ const Dashboard: React.FC = () => {
 
   const createDoc = async () => {
     if (!user) return;
-    const res = await fetch('https://livedocs-gool.onrender.com/documents', {
+    const res = await fetch(`${API_URL}/documents`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ownerId: user._id })
@@ -82,7 +83,7 @@ const Dashboard: React.FC = () => {
 
   const sendRequest = async (docId: string, permission: string) => {
     if (!user) return;
-    await fetch(`https://livedocs-gool.onrender.com/documents/${docId}/request`, {
+    await fetch(`${API_URL}/documents/${docId}/request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: user._id, permission })
@@ -91,14 +92,14 @@ const Dashboard: React.FC = () => {
   };
 
   const grantRequest = async (docId: string, requesterId: string) => {
-    await fetch(`https://livedocs-gool.onrender.com/documents/${docId}/requests/${requesterId}/grant`, {
+    await fetch(`${API_URL}/documents/${docId}/requests/${requesterId}/grant`, {
       method: 'POST'
     });
     setIncoming(prev => prev.filter(r => !(r.documentId === docId && r.requesterId === requesterId)));
   };
 
   const removeRequest = async (docId: string, requesterId: string, type: 'incoming' | 'outgoing') => {
-    await fetch(`https://livedocs-gool.onrender.com/documents/${docId}/requests/${requesterId}`, {
+    await fetch(`${API_URL}/documents/${docId}/requests/${requesterId}`, {
       method: 'DELETE'
     });
     if (type === 'incoming') {
