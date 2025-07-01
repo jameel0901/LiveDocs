@@ -103,17 +103,27 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
 
     socket.emit('join-document', id);
 
-    socket.on('document', (data: any) => {
-      if (typeof data === 'string') {
-        setContent(data);
-        setChars(data.split('').map(ch => ({ ch, userId: null })));
-      } else if (data && typeof data.content === 'string') {
-        setContent(data.content);
-        const arr = data.content.split('').map((ch: string, i: number) => ({
+    socket.on('document', (payload: any) => {
+      let text: string | undefined;
+
+      if (typeof payload === 'string') {
+        text = payload;
+      } else if (payload && typeof payload === 'object') {
+        if (typeof payload.content === 'string') text = payload.content;
+        else if (typeof payload.data === 'string') text = payload.data;
+        else if (typeof payload.text === 'string') text = payload.text;
+      }
+
+      if (typeof text === 'string') {
+        setContent(text);
+        const arr = text.split('').map((ch: string, i: number) => ({
           ch,
-          userId: data.authors?.[i] || null,
+          userId: (payload as any)?.authors?.[i] || null,
         }));
         setChars(arr);
+      } else {
+        setContent('');
+        setChars([]);
       }
     });
 
@@ -125,13 +135,21 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
     fetchApi(`https://livedocs-gool.onrender.com/document/${id}`)
       .then(res => res.json())
       .then(doc => {
-        setName(doc.name || '');
+        const { name = '', content, data, text } = doc || {};
+        setName(name);
 
-        if (typeof doc.content === 'string') {
-          setContent(doc.content);
-          setChars(
-            doc.content.split('').map((ch: string) => ({ ch, userId: null }))
-          );
+        const initial =
+          typeof content === 'string'
+            ? content
+            : typeof data === 'string'
+            ? data
+            : typeof text === 'string'
+            ? text
+            : '';
+
+        if (initial) {
+          setContent(initial);
+          setChars(initial.split('').map((ch: string) => ({ ch, userId: null })));
         }
       });
 
