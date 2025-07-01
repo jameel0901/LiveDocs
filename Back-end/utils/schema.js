@@ -36,7 +36,6 @@ const documentSchema = mongoose.Schema({
   ],
 
   content: { type: String, default: "" },
-  authors: { type: [String], default: [] },
 });
 
 module.exports = { userSchema, documentSchema };
