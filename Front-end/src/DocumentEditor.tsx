@@ -60,7 +60,11 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
 
   const applyTextOp = (text: string, op: Operation) => {
     const insert =
-      typeof op.insertText === 'string' ? op.insertText : String(op.insertText);
+      typeof op.insertText === 'string'
+        ? op.insertText
+        : op.insertText != null
+        ? String(op.insertText)
+        : '';
     return text.slice(0, op.index) + insert + text.slice(op.index + op.deleteCount);
   };
 
@@ -68,7 +72,11 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
     const before = arr.slice(0, op.index);
     const after = arr.slice(op.index + op.deleteCount);
     const text =
-      typeof op.insertText === 'string' ? op.insertText : String(op.insertText);
+      typeof op.insertText === 'string'
+        ? op.insertText
+        : op.insertText != null
+        ? String(op.insertText)
+        : '';
     const inserted = text.split('').map(ch => ({ ch, userId: op.userId }));
     return [...before, ...inserted, ...after];
   };
@@ -179,7 +187,11 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
       while (j < chars.length && chars[j].userId === uid) j++;
       const text = chars
         .slice(i, j)
-        .map(c => escapeHtml(String(c.ch)))
+        .map(c =>
+          escapeHtml(
+            typeof c.ch === 'string' ? c.ch : c.ch != null ? String(c.ch) : ''
+          )
+        )
         .join('');
       if (uid && showWriters) {
         html += `<span style="background-color:${getColor(uid)}77">${text}</span>`;
