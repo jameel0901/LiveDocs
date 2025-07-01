@@ -106,7 +106,10 @@ io.on("connection", (socket) => {
         current.slice(op.index + op.deleteCount);
       doc.content = newContent;
       await doc.save();
+      // send operation to other clients
       socket.to(id).emit("document-op", op);
+      // also send the updated full content
+      io.to(id).emit("document", newContent);
     });
   });
 });
