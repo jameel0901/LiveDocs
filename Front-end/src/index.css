@@ -152,39 +152,11 @@ code {
   position: relative;
 }
 
-.writer-overlay {
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 0.5rem;
-  white-space: pre-wrap;
-  color: transparent;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  z-index: 2;
-}
-
 .editor-actions {
   margin-bottom: 0.5rem;
   text-align: center;
 }
 
-.writer-legend {
-  margin-right: 0.5rem;
-}
-
-.legend-item {
-  display: inline-block;
-  padding: 0.15rem 0.35rem;
-  margin-right: 0.25rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  color: #000;
-}
 @media (max-width: 600px) {
   .auth-container,
   .dashboard,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 const fetchApi: typeof fetch =
@@ -14,31 +14,12 @@ interface Operation {
   userId: string;
 }
 
-interface Char {
-  ch: string;
-  userId: string | null;
-}
-
-const colors = [
-  '#ffadad',
-  '#ffd6a5',
-  '#caffbf',
-  '#9bf6ff',
-  '#a0c4ff',
-  '#bdb2ff',
-  '#ffc6ff',
-];
-
+// Simplified editor without author highlighting
 const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   const [content, setContent] = useState('');
-  const [chars, setChars] = useState<Char[]>([]);
-
-  const [showWriters, setShowWriters] = useState(false);
-  const [legend, setLegend] = useState<Record<string, string>>({});
   const [name, setName] = useState('');
-  const overlayRef = useRef<HTMLPreElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
-  const colorMap = useRef<Record<string, string>>({});
+
   const storedUser = () => {
     try {
       const stored = localStorage.getItem('user');
@@ -49,15 +30,6 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   };
   const user = useRef<{ _id: string; name: string }>(storedUser());
 
-  const getColor = (id: string) => {
-    if (!colorMap.current[id]) {
-      const used = Object.keys(colorMap.current).length;
-      colorMap.current[id] = colors[used % colors.length];
-      setLegend({ ...colorMap.current });
-    }
-    return colorMap.current[id];
-  };
-
   const applyTextOp = (text: string, op: Operation) => {
     const insert =
       typeof op.insertText === 'string'
@@ -66,19 +38,6 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
         ? String(op.insertText)
         : '';
     return text.slice(0, op.index) + insert + text.slice(op.index + op.deleteCount);
-  };
-
-  const applyCharOp = (arr: Char[], op: Operation) => {
-    const before = arr.slice(0, op.index);
-    const after = arr.slice(op.index + op.deleteCount);
-    const text =
-      typeof op.insertText === 'string'
-        ? op.insertText
-        : op.insertText != null
-        ? String(op.insertText)
-        : '';
-    const inserted = text.split('').map(ch => ({ ch, userId: op.userId }));
-    return [...before, ...inserted, ...after];
   };
 
   const diff = (oldStr: string, newStr: string) => {
@@ -122,22 +81,11 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
         else if (typeof payload.text === 'string') text = payload.text;
       }
 
-      if (typeof text === 'string') {
-        setContent(text);
-        const arr = text.split('').map((ch: string, i: number) => ({
-          ch,
-          userId: (payload as any)?.authors?.[i] || null,
-        }));
-        setChars(arr);
-      } else {
-        setContent('');
-        setChars([]);
-      }
+      setContent(typeof text === 'string' ? text : '');
     });
 
     socket.on('document-op', (op: Operation) => {
       setContent(prev => applyTextOp(prev, op));
-      setChars(prev => applyCharOp(prev, op));
     });
 
     fetchApi(`https://livedocs-gool.onrender.com/document/${id}`)
@@ -157,7 +105,6 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
 
         if (initial) {
           setContent(initial);
-          setChars(initial.split('').map((ch: string) => ({ ch, userId: null })));
         }
       });
 
@@ -171,43 +118,11 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
     const { index, deleteCount, insertText } = diff(content, value);
     const op: Operation = { index, deleteCount, insertText, userId: user.current._id };
     setContent(value);
-    setChars(prev => applyCharOp(prev, op));
     socketRef.current?.emit('edit-document', op);
   };
 
-  const escapeHtml = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-  const updateOverlay = () => {
-    if (!overlayRef.current) return;
-    let html = '';
-    for (let i = 0; i < chars.length; ) {
-      const uid = chars[i].userId;
-      let j = i;
-      while (j < chars.length && chars[j].userId === uid) j++;
-      const text = chars
-        .slice(i, j)
-        .map(c =>
-          escapeHtml(
-            typeof c.ch === 'string' ? c.ch : c.ch != null ? String(c.ch) : ''
-          )
-        )
-        .join('');
-      if (uid && showWriters) {
-        html += `<span style="background-color:${getColor(uid)}77">${text}</span>`;
-      } else {
-        html += text;
-      }
-      i = j;
-    }
-    overlayRef.current.innerHTML = html;
-  };
-
-  useEffect(updateOverlay, [chars, showWriters]);
-
-
   const saveAndExit = async () => {
-    await fetchApi(`https://livedocs-gool.onrender.com/documents/${id}` , {
+    await fetchApi(`https://livedocs-gool.onrender.com/documents/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, content })
@@ -218,27 +133,6 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   return (
     <div className="editor-container">
       <div className="editor-actions">
-        <label style={{ marginRight: '0.5rem' }}>
-          <input
-            type="checkbox"
-            checked={showWriters}
-            onChange={e => setShowWriters(e.target.checked)}
-          />{' '}
-          Show Writers
-        </label>
-        {showWriters && (
-          <span className="writer-legend">
-            {Object.entries(legend).map(([uid, color]) => (
-              <span
-                key={uid}
-                className="legend-item"
-                style={{ backgroundColor: color }}
-              >
-                {uid === user.current._id ? 'You' : uid.slice(0, 6)}
-              </span>
-            ))}
-          </span>
-        )}
         <button onClick={saveAndExit}>Save &amp; Exit</button>
       </div>
       <input
@@ -253,13 +147,6 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
           value={content}
           onChange={handleChange}
         />
-        {showWriters && (
-          <pre
-            className="writer-overlay"
-            ref={overlayRef}
-            aria-hidden="true"
-          ></pre>
-        )}
       </div>
     </div>
   );
