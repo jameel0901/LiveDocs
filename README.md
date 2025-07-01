@@ -11,10 +11,13 @@ Create a `.env` file inside the `Back-end` directory (the server always loads it
 ```
 PORT=5000
 ATLAS_URI=<your MongoDB connection string>
+CORS_ORIGIN=https://jameel0901.github.io
 ```
 
 `PORT` sets the HTTP/WebSocket server port and defaults to `5000` if not specified.
 `ATLAS_URI` is required for connecting to your MongoDB database.
+`CORS_ORIGIN` sets the allowed origins for HTTP and WebSocket requests. Multiple
+origins can be separated with commas.
 
 ## Running the Application
 
