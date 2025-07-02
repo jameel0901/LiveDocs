@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { io, Socket } from 'socket.io-client';
 import { API_URL, SOCKET_URL } from './config';
 
@@ -8,14 +10,7 @@ const fetchApi: typeof fetch =
 
 interface Props { id: string; onExit: () => void; }
 
-interface Operation {
-  index: number;
-  deleteCount: number;
-  insertText: string;
-  userId: string;
-}
 
-// Simplified editor without author highlighting
 const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   const [content, setContent] = useState('');
   const [name, setName] = useState('');
@@ -30,40 +25,7 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
     }
   };
   const user = useRef<{ _id: string; name: string }>(storedUser());
-
-  const applyTextOp = (text: string, op: Operation) => {
-    const insert =
-      typeof op.insertText === 'string'
-        ? op.insertText
-        : op.insertText != null
-        ? String(op.insertText)
-        : '';
-    return text.slice(0, op.index) + insert + text.slice(op.index + op.deleteCount);
-  };
-
-  const diff = (oldStr: string, newStr: string) => {
-    let start = 0;
-    while (
-      start < oldStr.length &&
-      start < newStr.length &&
-      oldStr[start] === newStr[start]
-    )
-      start++;
-
-    let endOld = oldStr.length - 1;
-    let endNew = newStr.length - 1;
-    while (
-      endOld >= start &&
-      endNew >= start &&
-      oldStr[endOld] === newStr[endNew]
-    ) {
-      endOld--;
-      endNew--;
-    }
-    const deleteCount = endOld - start + 1;
-    const insertText = newStr.slice(start, endNew + 1);
-    return { index: start, deleteCount, insertText };
-  };
+  const quillRef = useRef<ReactQuill | null>(null);
 
   useEffect(() => {
     const socket = io(SOCKET_URL);
@@ -89,8 +51,12 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
       }
     });
 
-    socket.on('document-op', (op: Operation) => {
-      setContent(prev => applyTextOp(prev, op));
+    socket.on('document-op', (delta: any) => {
+      const editor = quillRef.current?.getEditor();
+      if (editor) {
+        editor.updateContents(delta, 'api');
+        setContent(editor.root.innerHTML);
+      }
     });
 
     fetchApi(`${API_URL}/document/${id}`)
@@ -118,12 +84,11 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
     };
   }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    const { index, deleteCount, insertText } = diff(content, value);
-    const op: Operation = { index, deleteCount, insertText, userId: user.current._id };
+  const handleChange = (value: string, delta: any, source: string) => {
     setContent(value);
-    socketRef.current?.emit('edit-document', op);
+    if (source === 'user') {
+      socketRef.current?.emit('edit-document', { delta, content: value });
+    }
   };
 
   const saveAndExit = async () => {
@@ -147,11 +112,7 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
         placeholder="Document Name"
       />
       <div className="editor-wrapper">
-        <textarea
-          className="editor-textarea"
-          value={content}
-          onChange={handleChange}
-        />
+        <ReactQuill ref={quillRef} value={content} onChange={handleChange} />
       </div>
     </div>
   );

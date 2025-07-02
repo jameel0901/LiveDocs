@@ -10,8 +10,8 @@ beforeAll(() => {
 });
 
 
-test('renders editor textarea', () => {
-  render(<DocumentEditor id="test" onExit={() => {}} />);
-  const elements = screen.getAllByRole('textbox');
-  expect(elements[1]).toBeInTheDocument();
+test('renders editor', () => {
+  const { container } = render(<DocumentEditor id="test" onExit={() => {}} />);
+  const editor = container.querySelector('.ql-editor');
+  expect(editor).toBeInTheDocument();
 });
