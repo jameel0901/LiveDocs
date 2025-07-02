@@ -96,20 +96,13 @@ io.on("connection", (socket) => {
       (await Document.create({ _id: id }));
     socket.emit("document", doc.content || "");
 
-    socket.on("edit-document", async (op) => {
-      const doc =
-        (await Document.findById(id)) || (await Document.create({ _id: id }));
-      const current = doc.content || "";
-      const newContent =
-        current.slice(0, op.index) +
-        op.insertText +
-        current.slice(op.index + op.deleteCount);
-      doc.content = newContent;
-      await doc.save();
-      // send operation to other clients
-      socket.to(id).emit("document-op", op);
-      // send updated content only to the editor as confirmation
-      socket.emit("document", newContent);
+    socket.on("edit-document", async ({ delta, content }) => {
+      await Document.findByIdAndUpdate(
+        id,
+        { content },
+        { upsert: true }
+      );
+      socket.to(id).emit("document-op", delta);
     });
   });
 });
