@@ -108,8 +108,8 @@ io.on("connection", (socket) => {
       await doc.save();
       // send operation to other clients
       socket.to(id).emit("document-op", op);
-      // also send the updated full content
-      io.to(id).emit("document", newContent);
+      // send updated content only to the editor as confirmation
+      socket.emit("document", newContent);
     });
   });
 });
