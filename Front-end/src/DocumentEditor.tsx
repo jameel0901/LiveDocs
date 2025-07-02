@@ -71,6 +71,7 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
 
     socket.emit('join-document', id);
 
+    let initialized = false;
     socket.on('document', (payload: any) => {
       let text: string | undefined;
 
@@ -82,7 +83,10 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
         else if (typeof payload.text === 'string') text = payload.text;
       }
 
-      setContent(typeof text === 'string' ? text : '');
+      if (!initialized) {
+        setContent(typeof text === 'string' ? text : '');
+        initialized = true;
+      }
     });
 
     socket.on('document-op', (op: Operation) => {
