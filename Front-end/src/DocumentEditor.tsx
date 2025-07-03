@@ -33,6 +33,15 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
 
     socket.emit('join-document', id);
 
+    const quill = quillRef.current?.getEditor();
+    const textHandler = (delta: any, _old: any, source: string) => {
+      if (source !== 'user') return;
+      const html = quill?.root.innerHTML || '';
+      setContent(html);
+      socket.emit('edit-document', { delta, content: html });
+    };
+    quill?.on('text-change', textHandler);
+
     let initialized = false;
     socket.on('document', (payload: any) => {
       let text: string | undefined;
@@ -80,15 +89,13 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
       });
 
     return () => {
+      quill?.off('text-change', textHandler);
       socket.disconnect();
     };
   }, [id]);
 
-  const handleChange = (value: string, delta: any, source: string) => {
+  const handleChange = (value: string) => {
     setContent(value);
-    if (source === 'user') {
-      socketRef.current?.emit('edit-document', { delta, content: value });
-    }
   };
 
   const saveAndExit = async () => {
