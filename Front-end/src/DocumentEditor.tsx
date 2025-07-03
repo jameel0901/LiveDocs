@@ -28,7 +28,7 @@ const DocumentEditor: React.FC<Props> = ({ id, onExit }) => {
   const quillRef = useRef<ReactQuill | null>(null);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL);
+    const socket = io(SOCKET_URL, { transports: ['websocket'] });
     socketRef.current = socket;
 
     socket.emit('join-document', id);

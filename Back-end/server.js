@@ -30,9 +30,17 @@ const app = express();
 const server = http.createServer(app);
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-  : ["https://jameel0901.github.io"];
+  : [
+      "https://jameel0901.github.io",
+      "http://localhost:3000",
+    ];
 
-const io = new Server(server, { cors: { origin: allowedOrigins } });
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+  },
+});
 connectDb();
 //Returns middleware that only parses the json data
 app.use(bodyParser.json());
