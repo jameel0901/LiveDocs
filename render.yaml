@@ -1,0 +1,25 @@
+# Render Blueprint — optional; connect this repo in Render to apply settings.
+# Secrets (ATLAS_URI, JWT_SECRET) must be set in the Render dashboard.
+
+services:
+  - type: web
+    name: livedocs-backend
+    runtime: node
+    rootDir: Back-end
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ATLAS_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://jameel0901.github.io
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: ADMIN_EMAILS
+        sync: false
