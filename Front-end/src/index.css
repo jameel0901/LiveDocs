@@ -1819,13 +1819,22 @@ a:hover {
   }
 
   .dashboard-hero__actions--mobile {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
-    gap: 0.65rem;
+    gap: 0.55rem;
+  }
+
+  .dashboard-hero__actions--mobile .btn--primary {
+    grid-column: 1 / -1;
   }
 
   .dashboard-hero__actions--mobile .btn {
-    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    white-space: nowrap;
+    padding-inline: 0.75rem;
+    font-size: 0.88rem;
   }
 
   .analytics-header {
@@ -1853,7 +1862,28 @@ a:hover {
     display: none;
   }
 
-  .dashboard-hero,
+  .dashboard-hero {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.1rem 1rem;
+  }
+
+  .dashboard-hero__profile {
+    width: 100%;
+  }
+
+  .dashboard-hero__profile-link {
+    width: 100%;
+  }
+
+  .dashboard-hero__actions--mobile {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero__actions--mobile .btn--primary {
+    grid-column: auto;
+  }
+
   .editor-toolbar {
     align-items: stretch;
   }

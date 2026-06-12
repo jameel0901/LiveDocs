@@ -6,4 +6,14 @@ const isAdminEmail = (email) => {
   return adminEmails.includes(normalized);
 };
 
-module.exports = { isAdminEmail };
+const promoteAdminIfListed = async (user) => {
+  if (!user || !isAdminEmail(user.email) || user.role === "admin") {
+    return user;
+  }
+
+  user.role = "admin";
+  await user.save();
+  return user;
+};
+
+module.exports = { isAdminEmail, promoteAdminIfListed };

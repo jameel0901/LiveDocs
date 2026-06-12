@@ -9,6 +9,7 @@ const {
   segmentsToText,
 } = require("../utils/segments");
 const { getUserColor } = require("../utils/userColors");
+const { promoteAdminIfListed } = require("../utils/adminEmails");
 
 const getOrCreateDocument = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -349,11 +350,13 @@ const getUserProfile = asyncHandler(async (req, res) => {
     throw new Error("You can only view your own profile");
   }
 
-  const user = await Users.findById(id).lean();
+  const user = await Users.findById(id);
   if (!user) {
     res.status(404);
     throw new Error("User not found");
   }
+
+  await promoteAdminIfListed(user);
 
   const rawDocs = await Document.find({
     $or: [{ owner: user._id }, { "sharedWith.user": user._id }],

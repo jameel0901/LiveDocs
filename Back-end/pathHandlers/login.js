@@ -2,7 +2,7 @@ const { Users } = require("../utils/model");
 const bcrypt = require("bcrypt");
 const asyncHandler = require("express-async-handler");
 const { signToken } = require("../utils/token");
-const { isAdminEmail } = require("../utils/adminEmails");
+const { promoteAdminIfListed } = require("../utils/adminEmails");
 
 const loginHandler = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -21,10 +21,7 @@ const loginHandler = asyncHandler(async (req, res) => {
     throw new Error("Invalid email or password");
   }
 
-  if (isAdminEmail(user.email) && user.role !== "admin") {
-    user.role = "admin";
-    await user.save();
-  }
+  await promoteAdminIfListed(user);
 
   res.json({
     _id: user.id,

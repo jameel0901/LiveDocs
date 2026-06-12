@@ -53,6 +53,12 @@ if (isProduction) {
     process.exit(1);
   }
 
+  if (adminEmails.length === 0) {
+    console.warn(
+      "ADMIN_EMAILS is not set. Admin login promotion and admin console access will not work."
+    );
+  }
+
   if (adminSeedOnStartup && !adminPassword) {
     console.error("ADMIN_PASSWORD is required when ADMIN_SEED_ON_STARTUP=true");
     process.exit(1);

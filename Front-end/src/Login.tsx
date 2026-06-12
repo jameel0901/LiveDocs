@@ -51,8 +51,22 @@ const Login: React.FC = () => {
       if (res.ok) {
         sessionStorage.setItem(SERVER_AWAKE_KEY, 'true');
         const data = await res.json();
-        setStoredUser(data);
-        navigate(data.role === 'admin' ? '/admin' : '/dashboard');
+        let user = data;
+
+        try {
+          const profileRes = await fetch(`${API_BASE_URL}/users/${data._id}`, {
+            headers: { Authorization: `Bearer ${data.token}` },
+          });
+          if (profileRes.ok) {
+            const profile = await profileRes.json();
+            user = { ...data, role: profile.role || data.role };
+          }
+        } catch {
+          // Fall back to login payload if profile refresh fails.
+        }
+
+        setStoredUser(user);
+        navigate(user.role === 'admin' ? '/admin' : '/dashboard');
         return;
       }
 
