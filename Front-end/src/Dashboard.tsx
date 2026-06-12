@@ -621,36 +621,25 @@ const Dashboard: React.FC = () => {
 
           </div>
 
-          <div className="dashboard-hero__actions dashboard-hero__actions--mobile">
-
+          <div
+            className={`dashboard-hero__actions dashboard-hero__actions--mobile${
+              isAdmin ? ' dashboard-hero__actions--admin' : ''
+            }`}
+          >
             {isAdmin && (
-
               <Link to="/admin" className="btn btn--secondary">
-
                 Admin
-
               </Link>
-
             )}
-
             <Link to="/profile" className="btn btn--secondary">
-
               Profile
-
             </Link>
-
-            <button className="btn btn--primary" onClick={createDoc}>
-
-              + New Document
-
-            </button>
-
             <button className="btn btn--ghost" onClick={handleLogout}>
-
               Logout
-
             </button>
-
+            <button className="btn btn--primary" onClick={createDoc}>
+              + New Document
+            </button>
           </div>
 
         </section>
