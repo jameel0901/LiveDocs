@@ -1,1 +1,12 @@
-/node_modules
+node_modules/
+.env
+.env.local
+.env.*.local
+.env.production
+Back-end/.env
+Front-end/.env.local
+Front-end/.env.production
+build/
+dist/
+*.log
+.DS_Store
