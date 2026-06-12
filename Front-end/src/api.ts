@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './config';
+import { API_BASE_URL, appPath } from './config';
 
 export interface AuthUser {
   _id: string;
@@ -60,7 +60,7 @@ export const authFetch = async (path: string, options: RequestInit = {}) => {
 
   if (res.status === 401) {
     clearStoredUser();
-    window.location.assign('/login');
+    window.location.assign(appPath('/login'));
     throw new Error('Session expired');
   }
 

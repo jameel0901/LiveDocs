@@ -25,3 +25,11 @@ export const SOCKET_URL = resolveUrl(
   'REACT_APP_SOCKET_URL',
   API_BASE_URL
 );
+
+// GitHub Pages project site base path (empty in local dev).
+export const APP_BASENAME = trimTrailingSlash(process.env.PUBLIC_URL || '');
+
+export const appPath = (path: string) => {
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  return APP_BASENAME ? `${APP_BASENAME}${normalized}` : normalized;
+};

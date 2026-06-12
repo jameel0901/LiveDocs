@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { getStoredUser, isAdminUser } from './api';
+import { APP_BASENAME } from './config';
 import Login from './Login';
 import Signup from './Signup';
 import Dashboard from './Dashboard';
@@ -32,7 +33,7 @@ const HomeRedirect: React.FC = () => {
 function App() {
   return (
     <ModalProvider>
-    <Router>
+    <Router basename={APP_BASENAME}>
       <Routes>
         <Route path="/" element={<HomeRedirect />} />
         <Route path="/login" element={<Login />} />
