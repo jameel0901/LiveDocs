@@ -1,27 +1,25 @@
-
-const { userSchema, documentSchema } = require("./schema");
+const { userSchema, networkSchema, documentSchema } = require("./schema");
 const mongoose = require("mongoose");
+const { atlasUri } = require("../config/env");
 
 const connectDb = async () => {
-   console.log("Connecting to database...");
-   console.log("ATLAS_URI:", process.env.ATLAS_URI);
-   console.log("MONGODB_URI:", process.env.MONGODB_URI);
-   try {
-    if (!process.env.ATLAS_URI) {
-      throw new Error('ATLAS_URI environment variable is not defined');
-    }
-    const connect = await mongoose.connect(process.env.ATLAS_URI);
+  try {
+    const connection = await mongoose.connect(atlasUri);
     console.log(
-      "Database connected: ",
-      connect.connection.host,
-      connect.connection.name
+      "Database connected:",
+      connection.connection.host,
+      connection.connection.name
     );
   } catch (err) {
-    console.log(err);
+    console.error("Database connection failed:", err.message);
     process.exit(1);
   }
 };
-const Users = mongoose.models.Users || mongoose.model("Users", userSchema);
-const Document = mongoose.models.Document || mongoose.model("Document", documentSchema);
 
-module.exports = { connectDb, Users, Document };
+const Users = mongoose.models.Users || mongoose.model("Users", userSchema);
+const Network =
+  mongoose.models.Network || mongoose.model("Network", networkSchema);
+const Document =
+  mongoose.models.Document || mongoose.model("Document", documentSchema);
+
+module.exports = { connectDb, Users, Network, Document };

@@ -3,102 +3,127 @@ const http = require("http");
 const { Server } = require("socket.io");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const signupHandler = require("./pathHandlers/signup.js");
-const loginHandler = require("./pathHandlers/login.js");
-const { connectDb, Document, Users } = require("./utils/model");
 
+require("./config/env");
+
+const { port, corsOrigin } = require("./config/env");
+const { connectDb } = require("./utils/model");
+const { seedAdminUsers } = require("./utils/seedAdmin");
+const { verifyToken } = require("./utils/token");
+const { authenticate } = require("./middleware/auth");
+const { requireAdmin } = require("./middleware/admin");
+const errorHandler = require("./middleware/errorHandler");
+const { registerDocumentSockets } = require("./socket/documentSocket");
+
+const signupHandler = require("./pathHandlers/signup");
+const loginHandler = require("./pathHandlers/login");
+const { updateProfile } = require("./pathHandlers/profile");
 const {
   getOrCreateDocument,
   createDocument,
   updateDocument,
+  deleteDocument,
   requestShare,
   getIncomingRequests,
   getOutgoingRequests,
   grantAccess,
   removeRequest,
+  getUserProfile,
+  getUserAnalytics,
 } = require("./pathHandlers/document");
+const {
+  createNetwork,
+  listNetworks,
+  getNetwork,
+  joinNetwork,
+  leaveNetwork,
+  getNetworkFeed,
+} = require("./pathHandlers/network");
+const {
+  getAdminOverview,
+  listAdminUsers,
+  getAdminUser,
+  listAdminNetworks,
+  updateAdminUserPassword,
+  deleteAdminUser,
+  deleteAdminDocument,
+  deleteAdminNetwork,
+} = require("./pathHandlers/admin");
 
-const path = require("path");
-const envPath = path.join(__dirname, ".env");
-const result = require("dotenv").config({ path: envPath });
-if (result.error) {
-  console.warn(`Failed to load environment variables from ${envPath}`);
-}
-
-const port = process.env.PORT || 5000;
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
-connectDb();
-//Returns middleware that only parses the json data
+const io = new Server(server, {
+  cors: { origin: corsOrigin, methods: ["GET", "POST", "PUT", "DELETE"] },
+});
+
+const startServer = async () => {
+  await connectDb();
+  await seedAdminUsers();
+
+  server.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+};
+
+app.use(cors({ origin: corsOrigin }));
 app.use(bodyParser.json());
-// Returns middleware that only parses urlencoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
 
-app.use(cors({ origin: "*" }));
 app.post("/signup", signupHandler);
 app.post("/login", loginHandler);
+
+app.use(authenticate);
+
 app.get("/document/:id", getOrCreateDocument);
 app.post("/documents", createDocument);
 app.put("/documents/:id", updateDocument);
+app.delete("/documents/:id", deleteDocument);
 app.post("/documents/:id/request", requestShare);
 app.post("/documents/:id/requests/:requesterId/grant", grantAccess);
 app.delete("/documents/:id/requests/:requesterId", removeRequest);
 app.get("/users/:id/incoming-requests", getIncomingRequests);
 app.get("/users/:id/outgoing-requests", getOutgoingRequests);
-app.get("/users", async (req, res) => {
-  const users = await Users.find().lean();
-  const populated = await Promise.all(
-    users.map(async (u) => {
-      const docs = await Document.find({ owner: u._id }).select("_id name").lean();
-      return { _id: u._id, name: u.name, documents: docs };
-    })
-  );
-  res.json(populated);
+app.get("/users/:id/analytics", getUserAnalytics);
+app.put("/users/:id/profile", updateProfile);
+app.get("/users/:id", getUserProfile);
+
+app.post("/networks", createNetwork);
+app.get("/networks", listNetworks);
+app.post("/networks/join", joinNetwork);
+app.get("/networks/:id/feed", getNetworkFeed);
+app.get("/networks/:id", getNetwork);
+app.post("/networks/:id/leave", leaveNetwork);
+
+app.get("/admin/overview", requireAdmin, getAdminOverview);
+app.get("/admin/users", requireAdmin, listAdminUsers);
+app.get("/admin/users/:id", requireAdmin, getAdminUser);
+app.put("/admin/users/:id/password", requireAdmin, updateAdminUserPassword);
+app.delete("/admin/users/:id", requireAdmin, deleteAdminUser);
+app.get("/admin/networks", requireAdmin, listAdminNetworks);
+app.delete("/admin/networks/:id", requireAdmin, deleteAdminNetwork);
+app.delete("/admin/documents/:id", requireAdmin, deleteAdminDocument);
+
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+      return next(new Error("Authentication required"));
+    }
+
+    const decoded = verifyToken(token);
+    socket.data.userId = decoded.id;
+    next();
+  } catch (error) {
+    next(new Error("Invalid or expired token"));
+  }
 });
 
-app.get("/users/:id", async (req, res) => {
-  const user = await Users.findById(req.params.id).lean();
-  if (!user) return res.status(404).send("User not found");
-  const rawDocs = await Document.find({
-    $or: [{ owner: user._id }, { 'sharedWith.user': user._id }],
-  })
-    .populate('owner', 'name')
-    .lean();
+registerDocumentSockets(io);
 
-  const docs = rawDocs.map((d) => {
+app.use(errorHandler);
 
-    const info = (d.sharedWith || []).find(
-      (sw) => sw.user && sw.user.toString() === user._id.toString()
-
-    );
-    return {
-      _id: d._id,
-      name: d.name,
-      owner: d.owner ? { _id: d.owner._id, name: d.owner.name } : null,
-      sharedAt: info ? info.sharedAt : undefined,
-    };
-  });
-
-  res.json({ ...user, documents: docs });
-});
-
-io.on("connection", (socket) => {
-  socket.on("join-document", async (id) => {
-    socket.join(id);
-    const doc =
-      (await Document.findById(id)) ||
-      (await Document.create({ _id: id }));
-    socket.emit("document", doc.content);
-
-    socket.on("edit-document", async (content) => {
-      await Document.findByIdAndUpdate(id, { content });
-      socket.to(id).emit("document", content);
-    });
-  });
-});
-
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+startServer();

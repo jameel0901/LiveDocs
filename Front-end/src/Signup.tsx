@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from './config';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { parseErrorMessage } from './api';
+import { appAlert } from './modal';
+import Layout from './components/Layout';
 
 const Signup: React.FC = () => {
   const [name, setName] = useState('');
@@ -14,29 +17,75 @@ const Signup: React.FC = () => {
       const res = await fetch(`${API_BASE_URL}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, email, password }),
       });
+
       if (res.ok) {
         navigate('/login');
-      } else {
-        alert('Signup failed');
+        return;
       }
+
+      const message = await parseErrorMessage(res, 'Signup failed');
+      await appAlert(message, { variant: 'error' });
     } catch (err) {
       console.error(err);
-      alert('Failed to connect to server');
+      await appAlert('Failed to connect to server', { variant: 'error' });
     }
   };
 
   return (
+    <Layout variant="auth">
+      <form className="auth-container glass-card" onSubmit={handleSubmit}>
+        <div className="auth-container__intro">
+          <h2>Create your account</h2>
+          <p>Start writing and sharing documents in real time.</p>
+        </div>
 
-    <form className="auth-container" onSubmit={handleSubmit}>
+        <div className="field">
+          <label htmlFor="signup-name">Full name</label>
+          <input
+            id="signup-name"
+            placeholder="Jane Cooper"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+          />
+        </div>
 
-      <h2>Sign Up</h2>
-      <input placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
-      <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-      <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
-      <button type="submit">Create Account</button>
-    </form>
+        <div className="field">
+          <label htmlFor="signup-email">Email</label>
+          <input
+            id="signup-email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="signup-password">Password</label>
+          <input
+            id="signup-password"
+            type="password"
+            placeholder="At least 6 characters"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+        </div>
+
+        <button type="submit" className="btn btn--primary btn--block">
+          Create Account
+        </button>
+
+        <p className="auth-container__footer">
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
+      </form>
+    </Layout>
   );
 };
 
