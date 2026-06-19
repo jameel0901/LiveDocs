@@ -14,6 +14,7 @@ const { authenticate } = require("./middleware/auth");
 const { requireAdmin } = require("./middleware/admin");
 const errorHandler = require("./middleware/errorHandler");
 const { registerDocumentSockets } = require("./socket/documentSocket");
+const { registerLiveChatSockets } = require("./socket/liveChatSocket");
 
 const signupHandler = require("./pathHandlers/signup");
 const loginHandler = require("./pathHandlers/login");
@@ -49,6 +50,17 @@ const {
   deleteAdminDocument,
   deleteAdminNetwork,
 } = require("./pathHandlers/admin");
+const {
+  registerIdentity,
+  getMyIdentity,
+  listUsers,
+  lookupIdentity,
+  listConversations,
+  createDirectConversation,
+  createGroupConversation,
+  getConversationMessages,
+  getTurnCredentials,
+} = require("./pathHandlers/liveChat");
 
 const app = express();
 const server = http.createServer(app);
@@ -107,6 +119,16 @@ app.get("/admin/networks", requireAdmin, listAdminNetworks);
 app.delete("/admin/networks/:id", requireAdmin, deleteAdminNetwork);
 app.delete("/admin/documents/:id", requireAdmin, deleteAdminDocument);
 
+app.post("/livechat/identity", registerIdentity);
+app.get("/livechat/identity/me", getMyIdentity);
+app.get("/livechat/identity/:identityHash", lookupIdentity);
+app.get("/livechat/users", listUsers);
+app.get("/livechat/conversations", listConversations);
+app.post("/livechat/conversations/direct", createDirectConversation);
+app.post("/livechat/conversations/group", createGroupConversation);
+app.get("/livechat/conversations/:conversationId/messages", getConversationMessages);
+app.get("/livechat/turn-credentials", getTurnCredentials);
+
 io.use((socket, next) => {
   try {
     const token = socket.handshake.auth.token;
@@ -123,6 +145,7 @@ io.use((socket, next) => {
 });
 
 registerDocumentSockets(io);
+registerLiveChatSockets(io);
 
 app.use(errorHandler);
 

@@ -33,6 +33,12 @@ const corsOrigin = readEnv("CORS_ORIGIN");
 const adminEmails = parseAdminEmails();
 const adminPassword = readEnv("ADMIN_PASSWORD");
 const adminSeedOnStartup = parseBoolean(readEnv("ADMIN_SEED_ON_STARTUP"));
+const turnUrl = readEnv("TURN_URL");
+const turnSecret = readEnv("TURN_SECRET");
+const turnUrls = readEnv("TURN_URLS")
+  .split(",")
+  .map((url) => url.trim())
+  .filter(Boolean);
 
 const required = ["ATLAS_URI", "JWT_SECRET"];
 const missing = required.filter((key) => !readEnv(key));
@@ -76,4 +82,7 @@ module.exports = {
   adminEmails,
   adminPassword,
   adminSeedOnStartup,
+  turnUrl,
+  turnSecret,
+  turnUrls,
 };

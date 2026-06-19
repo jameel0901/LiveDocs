@@ -7,6 +7,7 @@ import Signup from './Signup';
 import Dashboard from './Dashboard';
 import Profile from './Profile';
 import Admin from './Admin';
+import LiveChat from './LiveChat';
 import DocumentEditor from './DocumentEditor';
 import ModalProvider from './modal';
 import './App.css';
@@ -41,6 +42,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/livechat" element={<LiveChat />} />
         <Route path="/document/:id" element={<DocumentWrapper />} />
         <Route path="*" element={<HomeRedirect />} />
       </Routes>

@@ -554,6 +554,10 @@ const Dashboard: React.FC = () => {
 
           )}
 
+          <Link to="/livechat" className="btn btn--secondary">
+            liveChat
+          </Link>
+
           <Link to="/profile" className="btn btn--secondary">
 
             Profile
@@ -631,7 +635,11 @@ const Dashboard: React.FC = () => {
                 Admin
               </Link>
             )}
-            <Link to="/profile" className="btn btn--secondary">
+            <Link to="/livechat" className="btn btn--secondary">
+            liveChat
+          </Link>
+
+          <Link to="/profile" className="btn btn--secondary">
               Profile
             </Link>
             <button className="btn btn--ghost" onClick={handleLogout}>
